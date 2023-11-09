@@ -1,4 +1,4 @@
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {
   View,
@@ -7,96 +7,107 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import Svg, {Path} from 'react-native-svg';
-//import axios from 'axios';
+import axios from 'axios';
 
-const CreateNewsScreen = () => {
+type CreateNewsScreenProps = {
+  route: RouteProp<
+    {
+      params: {
+        setShouldRefresh: (refresh: boolean) => void;
+      };
+    },
+    'params'
+  >;
+};
+
+const CreateNewsScreen: React.FC<CreateNewsScreenProps> = ({route}) => {
   const [newsTitle, setNewsTitle] = useState('');
   const [newsText, setNewsText] = useState('');
-
-  //   function getCurrentDateTime() {
-  //     const now = new Date();
-  //     return now.toISOString();
-  //   }
-
-  const isCreateButtonDisabled = () => {
-    return newsTitle.trim() === '' || newsText.trim() === '';
-  };
-  //   const createNews = async newsData => {
-  //     try {
-  //       const response = await axios.post(
-  //         'https://yourtestapi.com/api/posts/',
-  //         newsData,
-  //       );
-  //       console.log('Дані новини успішно додані:', response.data);
-  //       return response.data; // Можливо, повернути створену новину
-  //     } catch (error) {
-  //       console.error('Помилка при додаванні новини:', error);
-  //       throw error;
-  //     }
-  //   };
-
-  //   const newsData = {
-  //     title: 'Заголовок новини',
-  //     text: 'Текст новини',
-  //     image: 'URL до зображення',
-  //     url: 'URL новини',
-  //     created_at: getCurrentDateTime(),
-  //   };
-  //   createNews(newsData)
-  //     .then((createdNews) => {
-  //       // Оновлюємо список новин або виконуємо інші дії
-  //     })
-  //     .catch((error) => {
-  //       // Обробка помилок
-  //     });
+  const [imageUrl, setImageUrl] = useState('');
+  const [newsUrl, setNewsUrl] = useState('');
 
   const navigation = useNavigation();
 
   const navigateToHome = () => {
-    navigation.goBack(); // Перехід на попередню сторінку
+    navigation.goBack();
+  };
+
+  const isCreateButtonDisabled = () => {
+    return (
+      newsTitle.trim() === '' ||
+      newsText.trim() === '' ||
+      imageUrl.trim() === '' ||
+      newsUrl.trim() === ''
+    );
+  };
+
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return now.toISOString();
+  };
+
+  const createNews = async () => {
+    const newsData = {
+      title: newsTitle,
+      text: newsText,
+      image: imageUrl,
+      url: newsUrl,
+      created_at: getCurrentDateTime(),
+    };
+
+    try {
+      const response = await axios.post(
+        'https://yourtestapi.com/api/posts/',
+        newsData,
+      );
+      console.log('Дані новини успішно додані:', response.data);
+      const setShouldRefresh = route.params?.setShouldRefresh;
+
+      setShouldRefresh && setShouldRefresh(true);
+
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Помилка при додаванні новини:', error);
+    }
   };
 
   return (
     <View>
       <View>
-        <TouchableOpacity style={styles.backButton} onPress={navigateToHome}>
-          <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M10 2L8.59 3.41L13.17 8H3v4h10.17l-4.58 4.59L10 22l6-6L10 2z"
-              fill="#000"
-            />
-          </Svg>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.backButton} onPress={navigateToHome} />
       </View>
       <TextInput
+        style={styles.textInput}
         placeholder="Title"
         onChangeText={text => setNewsTitle(text)}
         value={newsTitle}
       />
       <TextInput
+        style={styles.textInput}
         placeholder="Image url"
-        onChangeText={text => setNewsTitle(text)}
-        value={newsTitle}
+        onChangeText={text => setImageUrl(text)}
+        value={imageUrl}
       />
       <TextInput
+        style={styles.textInput}
         placeholder="Link"
-        onChangeText={text => setNewsTitle(text)}
-        value={newsTitle}
+        onChangeText={text => setNewsUrl(text)}
+        value={newsUrl}
       />
       <TextInput
+        style={styles.textInput}
         placeholder="Type your message here.."
         onChangeText={text => setNewsText(text)}
         value={newsText}
         multiline={true}
       />
-      <Button
-        title="Public"
-        onPress={() => {
-          // Додайте тут логіку для створення новини
-        }}
-        disabled={isCreateButtonDisabled()}
-      />
+      <View style={styles.btn}>
+        <Button
+          title="Public"
+          onPress={createNews}
+          disabled={isCreateButtonDisabled()}
+        />
+      </View>
     </View>
   );
 };
@@ -107,7 +118,24 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    // Додайте інші стилі за потреби
+  },
+  textInput: {
+    height: 60,
+    width: 340,
+    borderRadius: 10,
+    backgroundColor: '#A4A9AE26',
+    alignSelf: 'center',
+    paddingLeft: 30,
+    fontSize: 17,
+    fontStyle: 'normal',
+    marginBottom: 25,
+  },
+  btn: {
+    width: 340,
+    alignSelf: 'center',
+    borderRadius: 10,
+    backgroundColor: '#456EFE',
+    opacity: 0.6,
   },
 });
 

@@ -15,6 +15,7 @@ import SearchBar from '../components/searchBar';
 import NoResults from '../components/NoResults';
 import TimeAgo from '../components/TimeAgo';
 import Modal from 'react-native-modal';
+import {useRoute} from '@react-navigation/native';
 
 type PostType = {
   id: number;
@@ -92,10 +93,10 @@ const PostInfo = styled.View`
 
 const LineContainer = styled.View`
   display: flex;
-  justify-content: center;
+  align-self: center;
 `;
 
-export const Home = () => {
+const Home = () => {
   // const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<PostType[]>([]);
   const [filteredItems, setFilteredItems] = useState<PostType[]>([]);
@@ -104,12 +105,17 @@ export const Home = () => {
   const [selectedItem, setSelectedItem] = useState<PostType | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const route = useRoute();
+
+  const shouldRefresh = route.params?.setShouldRefresh;
+
   const fetchPosts = () => {
     // setIsLoading(true);
     axios
-      .get<PostType[]>('')
+      .get<PostType[]>('https://yourtestapi.com/api/posts/')
       .then(response => {
         setItems(response.data);
+        shouldRefresh && shouldRefresh(false);
       })
       .catch(err => {
         console.log(err);
@@ -121,6 +127,7 @@ export const Home = () => {
 
   useEffect(() => {
     fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -223,14 +230,19 @@ export const Home = () => {
                 opacity="0.3"
                 d="M2.99994 3H37.9999"
                 stroke="#8E949A"
-                stroke-width="8"
-                stroke-linecap="round"
+                strokeWidth="5"
+                strokeLinecap="round"
               />
             </Svg>
           </LineContainer>
 
           <View style={modalStyles.buttonContainer}>
-            <Button title="Delete" onPress={handleDeleteNews} />
+            <Button
+              title="Delete"
+              onPress={handleDeleteNews}
+              color="#FF6363"
+              border-radius="10px"
+            />
           </View>
           <View style={modalStyles.buttonContainer}>
             <Button title="Close" onPress={handleCloseModal} />
@@ -240,3 +252,5 @@ export const Home = () => {
     </View>
   );
 };
+
+export default Home;
